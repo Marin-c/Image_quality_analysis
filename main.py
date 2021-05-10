@@ -7,7 +7,7 @@ from tkinter import filedialog
 from tkinter import *
 from tkinter import messagebox
 import tkinter.ttk as ttk
-from tkfilebrowser import askopendirname
+from tkfilebrowser import askopendirname, askopenfilenames
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from statistics import mean, stdev
@@ -41,13 +41,13 @@ def tenengrad(img, ksize=3):
     FM = Gx**2 + Gy**2
     return cv2.mean(FM)[0]
 
-def plot(STD,SNR,CQ,VLAP,MLAP,TLAP):
+def plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF):
     """Function that plot the figure at the end to show the results of the program"""
     #num_bins=10
     #sigma_CQ=stdev(CQ)
 
     fig1 = plt.figure(constrained_layout=True)
-    spec1 = gridspec.GridSpec(ncols=3, nrows=2, figure=fig1)
+    spec1 = gridspec.GridSpec(ncols=4, nrows=2, figure=fig1)
 
     f1_ax1 = fig1.add_subplot(spec1[0,0])
     f1_ax1.plot(STD)
@@ -78,6 +78,11 @@ def plot(STD,SNR,CQ,VLAP,MLAP,TLAP):
     f1_ax6.plot(TLAP)
     f1_ax6.axhline(mean(TLAP), color='k', linestyle='dashed', linewidth=1)
     f1_ax6.set_title("Laplacian TENG : %1.2f" % (mean(TLAP)))
+
+    f1_ax7 = fig1.add_subplot(spec1[0,3])
+    f1_ax7.plot(SURF)
+    f1_ax7.axhline(mean(SURF), color='k', linestyle='dashed', linewidth=1)
+    f1_ax7.set_title("Surface : %1.2f" % (mean(SURF)))
 """
     f1_ax4 = fig1.add_subplot(spec1[1,1])
     n, bins, patches = f1_ax4.hist(CQ, num_bins, density=True)
@@ -88,6 +93,7 @@ def plot(STD,SNR,CQ,VLAP,MLAP,TLAP):
 def find_path():
     """Function to display the asking directory frame"""
     root = Tk()
+    root = Toplevel()
     path = askopendirname(parent=root, initialdir='/', initialfile='tmp')
     root.destroy()
     return path
@@ -100,6 +106,23 @@ def control_path():
     root.destroy()
     return check
 
+def find_files():
+    """Function to display the asking files directory frame"""
+    root = Tk()
+    root = Toplevel()
+    files = askopenfilenames(parent=root, initialdir='/', initialfile='tmp')
+    root.destroy()
+    return files
+
+def control_files():
+    """Function that display the control of the images selection"""
+    root = Tk()
+    root.withdraw()
+    check = messagebox.askquestion("Find files","Les images sélectionnées sont-elles correctes ? \n %s" %files, icon="question")
+    root.destroy()
+    return check
+
+
 
 if __name__=="__main__":
     """
@@ -108,21 +131,32 @@ if __name__=="__main__":
 
     """
     #Chemin de dossier de l'image
+    global path
+    global files
     path=""
+    files=""
     check='no'
     root = Tk()
     root.withdraw()
     messagebox.showinfo("Programme de notation d'image", "Vous allez sélectionner un dossier d'image (uniquement d'images) qui vont être évaluées.")
     root.destroy()
     while check == 'no':
-        path = find_path()
-        check = control_path()
-    print(path)
+        root = Tk()
+        root.withdraw()
+        selection = messagebox.askquestion("Which source","Si vous préférez sélectionner des images individuelles cliquez sur #oui, si vous voulez sélectionner un dossier d'images cliquez sur #non", icon="question")
+        root.destroy()
+        if selection == "yes":
+            fichiers = find_files()
+            print(fichiers)
+            check = control_files()
+        else:
+            #Liste tous les fichiers du dossier
+            path = find_path()
+            fichiers = [f for f in listdir(path) if isfile(join(path, f))]
+            print(fichiers)
+            print(path)
+            check=control_path()
 
-
-    #Liste tous les fichiers du dossier
-    fichiers = [f for f in listdir(path) if isfile(join(path, f))]
-    #print(fichiers)
 
     #Listes pour toutes les mesures du dossier d'images
     STD=[]
@@ -162,6 +196,8 @@ if __name__=="__main__":
         SIZ1.append(siz1)
 
         vlap=cv2.Laplacian(img, cv2.CV_64F).var() #measure of blur by variation of Laplacien of the image
+        img_lap=cv2.Laplacian(img, cv2.CV_64F)
+        #cv2.imshow("Laplacian of %s" %i,img_lap)
         VLAP.append(vlap)
 
         mlap=modifiedLaplacian(img)
@@ -196,7 +232,8 @@ if __name__=="__main__":
     print("Max : ", "{:.2f}".format(max(SIZ0)), " x ", "{:.2f}".format(max(SIZ1)))
     print("Min : ", "{:.2f}".format(min(SIZ0)), " x ", "{:.2f}".format(min(SIZ1)))
 
-    plot(STD,SNR,CQ,VLAP,MLAP,TLAP)
+    SURF = np.array(SIZ0)*np.array(SIZ1)
+    plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF)
     plt.show()
     exit()
     #cv2.waitKey(0)
