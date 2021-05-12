@@ -74,6 +74,9 @@ def __compute_contrast_quality_for_image(input_image, num_bins=128):
     # First convert input to RGB image
     if len(input_image.shape) == 2:
         input_image = color.gray2rgb(input_image)
+
+    elif input_image.shape[2] == 4:
+            input_image=color.rgba2rgb(input_image)
     
     # Convert the RGB image to HSV. Exposure is primarily correlated with Value rather
     # than Hue and Saturation

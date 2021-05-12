@@ -186,15 +186,19 @@ if __name__=="__main__":
         #print(path_of_image)
         (filepath, filename) = os.path.split(path_of_image)
         file, ext = os.path.splitext(filename)
+        if len(file)>12:
+            file=file[:13]
         NAM.append(file)
         #img = cv2.imread(path_of_image) #Ouverture de l'image
-        img = cv2.imread(path_of_image)
-        print(img.shape,"; ",img.dtype)
-        print(np.shape(img))
-        try:
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        except:
-            pass
+        im = PIL.Image.open(path_of_image)
+        img = np.array(im)
+        #print(img.shape[2])
+        if len(img.shape) > 2:
+            if img.shape[2] == 4:
+                img=cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
+                img=cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGRA2GRAY)
+            elif img.shape[2] == 3:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         #cv2.imshow(i,img)
 
         std=ndimage.standard_deviation(img) #mesure de la standard deviation
@@ -205,7 +209,7 @@ if __name__=="__main__":
         snr=snra(img)
         SNR.append(snr)
 
-        siz0, siz1 = img.shape #mesure de la taille des images
+        siz0, siz1 = img.shape[0],img.shape[1] #mesure de la taille des images
         SIZ0.append(siz0)
         SIZ1.append(siz1)
 
@@ -220,7 +224,7 @@ if __name__=="__main__":
         tlap=tenengrad(img)
         TLAP.append(tlap)
 
-        cq=pct.contrast_quality(path_of_image) #mesure de la qualité du contraste basé sur l'entropie de l'image
+        cq=pct.__compute_contrast_quality_for_image(img) #mesure de la qualité du contraste basé sur l'entropie de l'image
         CQ.append(cq)
 
         it += 1
