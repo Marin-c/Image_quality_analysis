@@ -41,13 +41,13 @@ def tenengrad(img, ksize=3):
     FM = Gx**2 + Gy**2
     return cv2.mean(FM)[0]
 
-def plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF):
+def plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF,NAM):
     """Function that plot the figure at the end to show the results of the program"""
     #num_bins=10
     #sigma_CQ=stdev(CQ)
 
     fig1 = plt.figure(constrained_layout=True)
-    spec1 = gridspec.GridSpec(ncols=4, nrows=2, figure=fig1)
+    spec1 = gridspec.GridSpec(ncols=3, nrows=2, figure=fig1)
 
     f1_ax1 = fig1.add_subplot(spec1[0,0])
     f1_ax1.plot(STD)
@@ -78,11 +78,20 @@ def plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF):
     f1_ax6.plot(TLAP)
     f1_ax6.axhline(mean(TLAP), color='k', linestyle='dashed', linewidth=1)
     f1_ax6.set_title("Laplacian TENG : %1.2f" % (mean(TLAP)))
-
+    """
     f1_ax7 = fig1.add_subplot(spec1[0,3])
     f1_ax7.plot(SURF)
     f1_ax7.axhline(mean(SURF), color='k', linestyle='dashed', linewidth=1)
     f1_ax7.set_title("Surface : %1.2f" % (mean(SURF)))
+    """
+    for i in range(len(NAM)):
+        f1_ax1.annotate(NAM[i], (i, STD[i]))
+        f1_ax2.annotate(NAM[i], (i, SNR[i]))
+        f1_ax3.annotate(NAM[i], (i, CQ[i]))
+        f1_ax4.annotate(NAM[i], (i, VLAP[i]))
+        f1_ax5.annotate(NAM[i], (i, MLAP[i]))
+        f1_ax6.annotate(NAM[i], (i, TLAP[i]))
+        #f1_ax7.annotate(NAM[i], (i, SURF[i]))
 """
     f1_ax4 = fig1.add_subplot(spec1[1,1])
     n, bins, patches = f1_ax4.hist(CQ, num_bins, density=True)
@@ -167,6 +176,7 @@ if __name__=="__main__":
     VLAP=[]
     MLAP=[]
     TLAP=[]
+    NAM=[]
 
     it=0 #itérations
     for i in fichiers:
@@ -174,6 +184,9 @@ if __name__=="__main__":
 
         path_of_image=join(path,i) #Chemin de l'image
         #print(path_of_image)
+        (filepath, filename) = os.path.split(path_of_image)
+        file, ext = os.path.splitext(filename)
+        NAM.append(file)
         #img = cv2.imread(path_of_image) #Ouverture de l'image
         im = PIL.Image.open(path_of_image)
         img = np.array(im)
@@ -233,7 +246,7 @@ if __name__=="__main__":
     print("Min : ", "{:.2f}".format(min(SIZ0)), " x ", "{:.2f}".format(min(SIZ1)))
 
     SURF = np.array(SIZ0)*np.array(SIZ1)
-    plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF)
+    plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF, NAM)
     plt.show()
     exit()
     #cv2.waitKey(0)

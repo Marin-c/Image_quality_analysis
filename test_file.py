@@ -1,8 +1,6 @@
 import cv2
 import PIL.Image
 import numpy as np
-from resizeimage import resizeimage
-from skimage import measure
 from tkinter import filedialog
 from tkinter import *
 from tkinter import messagebox
@@ -60,7 +58,7 @@ if __name__=="__main__":
     check='no'
     root = Tk()
     root.withdraw()
-    messagebox.showinfo("image resize", "Vous allez sélectionner un dossier d'image (uniquement d'images) qui vont être modifiées.")
+    messagebox.showinfo("Programme de notation d'image", "Vous allez sélectionner un dossier d'image (uniquement d'images) qui vont être évaluées.")
     root.destroy()
     while check == 'no':
         root = Tk()
@@ -86,7 +84,6 @@ if __name__=="__main__":
         path_of_image=join(path,i) #Chemin de l'image
         #print(path_of_image)
         #img = cv2.imread(path_of_image) #Ouverture de l'image
-        file, ext = os.path.splitext(path_of_image)
         im = PIL.Image.open(path_of_image)
         img = np.array(im)
         try:
@@ -94,34 +91,3 @@ if __name__=="__main__":
         except:
             pass
         #cv2.imshow(i,img)
-
-        print(img.shape)
-
-        choice = str(input("Crop or upscale ?"))
-        if choice == "crop":
-            sf_in = img.shape[0]*img.shape[1]
-            top = int(input("Shift from top ?"))
-            left = int(input("Shift from left ?"))
-            width = int(input("Width of the image ?"))
-            height = int(input("Height of the image ?"))
-            img2 = img[top:top+height, left:left+width]
-            sf_out = img2.shape[0]*img2.shape[1]
-            
-            crp = sf_in/sf_out
-            name = file + "_cropped%1.1f" %crp + ext
-            print(name)   
-
-        elif choice == "upscale":
-            incr = float(input("Which increase size multipilicator do you want ?"))
-            img2_size=(int(img.shape[1]*incr), int(img.shape[0]*incr))
-            print(img2_size)
-            #img2 = img1.resize(img2_size, resample=PIL.Image.NEAREST)
-            img2 = cv2.resize(img, img2_size, interpolation=1)
-            name = file + "_upscale%1.1f_LIN" %incr + ext
-            print(name) 
-        
-        img_final = PIL.Image.fromarray(img2)
-        img_final.save(name)
-        #img2.show()
-        it += 1
-exit()
