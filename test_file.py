@@ -84,10 +84,11 @@ if __name__=="__main__":
         path_of_image=join(path,i) #Chemin de l'image
         #print(path_of_image)
         #img = cv2.imread(path_of_image) #Ouverture de l'image
-        im = PIL.Image.open(path_of_image)
-        img = np.array(im)
+        img = cv2.imread(path_of_image)
+        #img = np.array(im)
         try:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         except:
             pass
-        #cv2.imshow(i,img)
+        cv2.imshow(i,img)
+        input("wait")

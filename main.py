@@ -188,8 +188,9 @@ if __name__=="__main__":
         file, ext = os.path.splitext(filename)
         NAM.append(file)
         #img = cv2.imread(path_of_image) #Ouverture de l'image
-        im = PIL.Image.open(path_of_image)
-        img = np.array(im)
+        img = cv2.imread(path_of_image)
+        print(img.shape,"; ",img.dtype)
+        print(np.shape(img))
         try:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         except:
