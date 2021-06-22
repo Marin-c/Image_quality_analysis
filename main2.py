@@ -1,4 +1,3 @@
-from types import AsyncGeneratorType
 from scipy import ndimage, stats
 import cv2
 import PIL.Image
@@ -41,6 +40,21 @@ def tenengrad(img, ksize=3):
     Gy = cv2.Sobel(img, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=ksize)
     FM = Gx**2 + Gy**2
     return cv2.mean(FM)[0]
+
+def gray_moment(img):
+    m=cv2.moments(img)
+    return m["m00"]
+
+def mom_bin(img):
+    thres=gray_moment(img)
+    thres_indice0=img<thres #Liste des pixels dont la valeur est inférieur au seuil
+    thres_indice1=img>thres #Liste des pixels dont la valeur est supérieur au seuil
+    img[thres_indice0]=0 #Binarisation de l'image
+    img[thres_indice1]=255
+    plt.imshow(img)
+    plt.show()
+    return img
+
 
 def plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF,NAM):
     """Function that plot the figure at the end to show the results of the program"""
@@ -216,17 +230,17 @@ if __name__=="__main__":
         #img = cv2.imread(path_of_image) #Ouverture de l'image
         im = PIL.Image.open(path_of_image)
         img = np.array(im)
-        print(im.format, im.mode)
-        print(img.shape)
+        #print(img.shape[2])
         if len(img.shape) > 2:
             if img.shape[2] == 4:
                 img=cv2.cvtColor(img, cv2.COLOR_RGBA2BGRA)
                 img=cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGRA2GRAY)
             elif img.shape[2] == 3:
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = img.astype(np.uint16)      
-        print(img)
-        #img = img.astype(np.float16)
+        #cv2.imshow(i,img)
+
+        m=mom_bin(img)
+        #print(m)
 
         std=ndimage.standard_deviation(img) #mesure de la standard deviation
         STD.append(std)
@@ -277,9 +291,11 @@ if __name__=="__main__":
     print("Max : ", "{:.2f}".format(max(SIZ0)), " x ", "{:.2f}".format(max(SIZ1)))
     print("Min : ", "{:.2f}".format(min(SIZ0)), " x ", "{:.2f}".format(min(SIZ1)))
 
+    """
     SURF = np.array(SIZ0)*np.array(SIZ1)
     plot(STD,SNR,CQ,VLAP,MLAP,TLAP,SURF, NAM)
     plt.show()
+    """
     exit()
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
